@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: google-drive-clone
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/drivedb
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8080
+
+file:
+  upload-dir: ./uploads
