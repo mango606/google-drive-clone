@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drive 설계</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<!-- currentFolderId를 JavaScript에 전달 -->
+<input type="hidden" id="currentFolderId" th:value="${currentFolderId}">
+
+<div class="container">
+    <div class="header">
+        <div class="logo">
+            <a href="/">
+                <span>📁</span>
+                <span>Drive</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 내 드라이브 드롭다운 -->
+    <div class="breadcrumb-container">
+        <div class="breadcrumb-dropdown">
+            <button class="breadcrumb-toggle" onclick="toggleDropdown()">
+                <span>내 드라이브</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+
+            <div id="dropdownMenu" class="dropdown-menu">
+                <button class="dropdown-item" onclick="openFolderModal(); closeDropdown();">
+                    <span class="dropdown-item-icon">📁</span>
+                    <span>새 폴더</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="openUploadModal(); closeDropdown();">
+                    <span class="dropdown-item-icon">📤</span>
+                    <span>파일 업로드</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="breadcrumb-path">
+            <span th:if="${currentFolder}" th:text="'› ' + ${currentFolder.folderName}"></span>
+        </div>
+    </div>
+
+    <!-- 폴더 섹션 -->
+    <div th:if="${!folders.isEmpty()}">
+        <h3 class="section-title">폴더</h3>
+        <div class="grid">
+            <div class="card" th:each="folder : ${folders}">
+                <div class="card-icon" th:onclick="'navigateToFolder(' + ${folder.id} + ')'">📁</div>
+                <div class="card-name" th:text="${folder.folderName}"></div>
+                <div class="card-info" th:text="${folder.createdAt}"></div>
+                <div class="card-actions">
+                    <button class="btn btn-danger" th:onclick="'deleteFolder(' + ${folder.id} + ')'">삭제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 파일 섹션 -->
+    <div th:if="${!files.isEmpty()}">
+        <h3 class="section-title">파일</h3>
+        <div class="grid">
+            <div class="card" th:each="file : ${files}">
+                <div class="card-icon">📄</div>
+                <div class="card-name" th:text="${file.fileName}"></div>
+                <div class="card-info" th:text="${file.fileSizeFormatted} + ' • ' + ${file.uploadedAt}"></div>
+                <div class="card-actions">
+                    <button class="btn btn-primary" th:onclick="'downloadFile(' + ${file.id} + ')'">다운로드</button>
+                    <button class="btn btn-danger" th:onclick="'deleteFile(' + ${file.id} + ')'">삭제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 빈 상태 -->
+    <div th:if="${folders.isEmpty() && files.isEmpty()}" class="empty-state">
+        <div class="empty-state-icon">📁</div>
+        <div class="empty-state-title">폴더가 비어있습니다</div>
+        <div class="empty-state-text">"내 드라이브" 버튼을 눌러 시작하세요</div>
+    </div>
+</div>
+
+<!-- 파일 업로드 모달 -->
+<div id="uploadModal" class="modal" onclick="closeModalOnBackdrop(event, 'uploadModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 class="modal-title">파일 업로드</h2>
+        <form id="uploadForm">
+            <div class="form-group">
+                <label class="file-upload-area" for="fileInput" id="uploadArea">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">파일을 선택하세요</div>
+                    <div class="upload-hint">또는 여기에 드래그하세요</div>
+                    <input type="file" id="fileInput" multiple>
+                </label>
+                <div id="selectedFiles" class="selected-files" style="display: none;">
+                    <div class="selected-files-title">선택된 파일:</div>
+                    <div id="fileList"></div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">취소</button>
+                <button type="submit" class="btn btn-primary">업로드</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 새 폴더 모달 -->
+<div id="folderModal" class="modal" onclick="closeModalOnBackdrop(event, 'folderModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 class="modal-title">새 폴더 만들기</h2>
+        <form id="folderForm">
+            <div class="form-group">
+                <label class="form-label" for="folderName">폴더 이름</label>
+                <input type="text" id="folderName" class="form-input" placeholder="새 폴더" required autofocus>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeFolderModal()">취소</button>
+                <button type="submit" class="btn btn-primary">만들기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 알림 -->
+<div id="notification" class="notification"></div>
+
+<!-- JavaScript 라이브러리 -->
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+
+<!-- 커스텀 JavaScript -->
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>
